@@ -8,14 +8,25 @@ generator client {
   engineType      = "client"
 }
 
+enum InquiryStatus {
+  OPEN
+  RESOLVED
+}
+
 model Inquiry {
   id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  email     String
-  phone     String?
-  eventDate DateTime?
-  message   String
-  createdAt DateTime @default(now())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  status         InquiryStatus @default(OPEN)
+
+  name           String
+  email          String
+  phone          String?
+  message        String?
+
+  resolvedAt     DateTime?
+  resolutionNote String?
 }
 
 model GalleryImage {
