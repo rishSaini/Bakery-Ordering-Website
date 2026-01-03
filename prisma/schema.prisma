@@ -1,6 +1,5 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -22,7 +21,7 @@ model Inquiry {
 model GalleryImage {
   id        String   @id @default(uuid()) @db.Uuid
   title     String?
-  imageUrl  String   // Cloudinary URL
+  imageUrl  String   @unique
   createdAt DateTime @default(now())
   category  String 
 }
