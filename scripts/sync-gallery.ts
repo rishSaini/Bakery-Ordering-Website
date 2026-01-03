@@ -1,114 +1,144 @@
 import dotenv from "dotenv";
+dotenv.config({ path: ".env.local", override: true });
+dotenv.config({ path: ".env", override: true });
+
 import { v2 as cloudinary } from "cloudinary";
-import { prisma } from "../lib/prisma";
 
-dotenv.config({ path: ".env.local" });
-dotenv.config({ path: ".env" });
+import { PrismaClient } from "@prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
 
-const folder = process.argv[2] ?? "gallery"; // default: gallery
+// Needed in Node for Neon serverless driver (safe even if Node has WebSocket)
+neonConfig.webSocketConstructor = ws;
 
-if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-    throw new Error("Missing Cloudinary env vars (CLOUDINARY_CLOUD_NAME / API_KEY / API_SECRET)");
-}
+const connectionString = process.env.DATABASE_URL!;
+if (!connectionString) throw new Error("DATABASE_URL missing");
+
+const adapter = new PrismaNeon({ connectionString });
+const prisma = new PrismaClient({ adapter });
+
+const ROOT_FOLDER = process.argv[2] ?? "Cakes";
 
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-type CloudinaryResource = {
-    public_id: string;
-    secure_url: string;
-    created_at: string;
+type Folder = { name: string; path: string };
+type Resource = {
+  secure_url: string;
+  public_id: string;
+  resource_type: "image" | "video" | "raw";
+  type: "upload";
+  display_name?: string;
 };
 
+async function listSubfolders(parent: string): Promise<Folder[]> {
+  const res = await cloudinary.api.sub_folders(parent);
+  return (res.folders ?? []) as Folder[];
+}
+
+async function listResourcesByAssetFolder(assetFolder: string): Promise<Resource[]> {
+  const all: Resource[] = [];
+  let next_cursor: string | undefined;
+
+  do {
+    const res = await cloudinary.api.resources_by_asset_folder(assetFolder, {
+      max_results: 500,
+      next_cursor,
+    });
+
+    all.push(...((res.resources ?? []) as Resource[]));
+    next_cursor = res.next_cursor;
+  } while (next_cursor);
+
+  return all;
+}
+
+async function walkFolders(root: string): Promise<string[]> {
+  const out: string[] = [root];
+  const stack: string[] = [root];
+
+  while (stack.length) {
+    const cur = stack.pop()!;
+    const kids = await listSubfolders(cur);
+    for (const k of kids) {
+      out.push(k.path);
+      stack.push(k.path);
+    }
+  }
+
+  return out;
+}
+
+function categoryFromFolderPath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  return parts[parts.length - 1] ?? "Uncategorized";
+}
+
+// HEIC often won’t display directly in browsers; f_auto,q_auto makes Cloudinary serve a compatible format.
+function deliveryUrl(secureUrl: string) {
+  return secureUrl.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+}
+
 function titleFromPublicId(publicId: string) {
-    const last = publicId.split("/").pop() ?? publicId;
-    return last
-        .replace(/[-_]+/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function categoryFromPublicId(publicId: string) {
-    const prefix = folder.replace(/\/+$/, ""); // remove trailing slash
-
-    // Only handle items inside the folder
-    if (!publicId.startsWith(prefix + "/")) return "Uncategorized";
-
-    // Get the part after the folder
-    const rest = publicId.slice(prefix.length + 1); // after "folder/"
-    const [firstSegment] = rest.split("/");
-
-    // If you have subfolders, firstSegment is the category
-    // If images are directly inside the folder, it will be a filename -> fallback
-    return firstSegment && rest.includes("/") ? firstSegment.trim() : "Uncategorized";
-}
-
-async function listAllResources(prefix: string) {
-    const all: CloudinaryResource[] = [];
-    let next_cursor: string | undefined = undefined;
-
-    do {
-        const res = await cloudinary.api.resources({
-            type: "upload",
-            resource_type: "image",
-            prefix,
-            max_results: 500,
-            next_cursor,
-        });
-
-        const resources = (res.resources ?? []) as CloudinaryResource[];
-        all.push(...resources);
-        next_cursor = res.next_cursor;
-    } while (next_cursor);
-
-    return all;
+  const last = publicId.split("/").pop() ?? publicId;
+  return last.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 async function main() {
-    console.log(`Syncing Cloudinary folder "${folder}" -> GalleryImage table...`);
+  if (!process.env.DATABASE_URL) {
+    throw new Error("Missing DATABASE_URL in .env.local (Prisma needs it)");
+  }
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    throw new Error("Missing Cloudinary env vars");
+  }
 
-    // 1) Pull Cloudinary assets
-    const resources = await listAllResources(folder);
-    console.log(`Found ${resources.length} Cloudinary assets under "${folder}"`);
+  console.log(`Syncing Cloudinary asset folder "${ROOT_FOLDER}" -> GalleryImage table...`);
 
-    // 2) Get existing imageUrls from DB (to avoid duplicates)
-    const existing = await prisma.galleryImage.findMany({
-        select: { imageUrl: true },
-    });
-    const existingSet = new Set(existing.map((x) => x.imageUrl));
+  const folders = await walkFolders(ROOT_FOLDER);
+  console.log(`Found ${folders.length} folders (root + subfolders)`);
 
-    // 3) Build rows
-    const toCreate = resources
-        .filter((r) => !existingSet.has(r.secure_url))
-        .map((r) => ({
-            title: titleFromPublicId(r.public_id),
-            imageUrl: r.secure_url,
-            category: categoryFromPublicId(r.public_id),
-            // createdAt will default in DB; you can also set it if you want:
-            // createdAt: new Date(r.created_at),
-        }));
+  const existing = await prisma.galleryImage.findMany({ select: { imageUrl: true } });
+  const existingSet = new Set(existing.map((x) => x.imageUrl));
 
-    console.log(`New rows to insert: ${toCreate.length}`);
+  let inserted = 0;
 
-    if (toCreate.length === 0) {
-        console.log("Nothing to insert. Done.");
-        return;
-    }
+  for (const folderPath of folders) {
+    const resources = await listResourcesByAssetFolder(folderPath);
+    const images = resources.filter((r) => r.type === "upload" && r.resource_type === "image");
 
-    // 4) Insert
-    // Prisma createMany is fast. (No skipDuplicates unless you add a unique constraint.)
-    await prisma.galleryImage.createMany({ data: toCreate });
+    if (images.length === 0) continue;
 
-    console.log("Inserted successfully.");
+    const category = folderPath === ROOT_FOLDER ? "Uncategorized" : categoryFromFolderPath(folderPath);
+
+    const data = images
+      .map((r) => ({
+        title: titleFromPublicId(r.public_id),
+        imageUrl: deliveryUrl(r.secure_url),
+        category,
+      }))
+      .filter((row) => !existingSet.has(row.imageUrl));
+
+    if (data.length === 0) continue;
+
+    await prisma.galleryImage.createMany({ data });
+    data.forEach((d) => existingSet.add(d.imageUrl));
+    inserted += data.length;
+
+    console.log(`+ ${data.length} from ${folderPath} -> category "${category}"`);
+  }
+
+  console.log(`Done ✅ Inserted ${inserted} rows total.`);
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

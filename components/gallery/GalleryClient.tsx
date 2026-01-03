@@ -3,6 +3,16 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
+function toDisplayUrl(url: string) {
+  // Force Cloudinary to deliver a browser-friendly format + good compression
+  if (!url.includes("/image/upload/")) return url;
+
+  // If it already has transforms, don't double-inject
+  if (url.includes("/image/upload/f_auto")) return url;
+
+  return url.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+}
+
 export type GalleryItem = {
   id: string;
   title: string;
@@ -15,7 +25,10 @@ export default function GalleryClient({ items }: { items: GalleryItem[] }) {
   const [active, setActive] = useState<string>("All");
 
   const categories = useMemo(() => {
-    const unique = Array.from(new Set(items.map((i) => i.category))).filter(Boolean);
+    const unique = Array.from(
+      new Set(items.map((i) => (i.category ?? "").trim()))
+    ).filter((c) => c.length > 0);
+
     unique.sort((a, b) => a.localeCompare(b));
     return ["All", ...unique];
   }, [items]);
@@ -70,34 +83,21 @@ export default function GalleryClient({ items }: { items: GalleryItem[] }) {
           </div>
         ) : (
           <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
-            {filtered.map((item, idx) => {
-              // simple variation so it feels like "tall vs square" without real image work yet
-              const tall = idx % 3 !== 1;
-              const h = tall ? "h-80" : "h-56";
-
-              return (
-                <div
-                  key={item.id}
-                  className="mb-5 break-inside-avoid overflow-hidden rounded-2xl bg-white/80 shadow-sm ring-1 ring-rose-100"
-                >
-                  {/* IMAGE AREA (placeholder for now) */}
-                  <div
-                    className={`relative w-full ${h} bg-gradient-to-br from-rose-100 via-white to-amber-100`}
-                  >
-                    {/* If you want to show real images later, replace the div above with:
-                        <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" />
-                    */}
-
-                    <div className="absolute inset-x-0 bottom-0 bg-white/70 p-4 backdrop-blur">
-                      <div className="text-sm font-semibold text-rose-950">{item.title}</div>
-                      <div className="mt-1 text-xs font-semibold text-rose-700/80">
-                        {item.category}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {filtered.map((item) => (
+              <div
+                key={item.id}
+                className="mb-5 break-inside-avoid overflow-hidden rounded-2xl bg-white/80 shadow-sm ring-1 ring-rose-100"
+              >
+                {/* Full image (no crop). Scales down to fit column width. */}
+                <img
+                  src={toDisplayUrl(item.imageUrl)}
+                  alt={item.title || "Gallery image"}
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-auto w-full"
+                />
+              </div>
+            ))}
           </div>
         )}
 
