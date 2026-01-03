@@ -1,26 +1,32 @@
 import ProductCard, { Product } from "@/components/ProductCard";
 
+function toDisplayUrl(url: string) {
+    if (!url.includes("/image/upload/")) return url;
+    if (url.includes("/image/upload/f_auto")) return url;
+    return url.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+}
+
 const bestSellers: Product[] = [
   {
-    id: "chocolate-silk",
-    name: "Chocolate Silk",
-    price: 45,
-    imageUrl: "/images/cake-1.jpg",
-    subtitle: "Deep cocoa, silky ganache.",
+    id: "rasmalai-cake",
+    name: "Rasmalai Cake",
+    price: 50,
+    imageUrl: toDisplayUrl("https://res.cloudinary.com/deuxtg2g2/image/upload/v1767470338/IMG_7414_uyho1d.heic"),
+    subtitle: "Light, milky sweetness with a nostalgic indian sweet taste",
   },
   {
-    id: "vanilla-bean",
-    name: "Vanilla Bean",
+    id: "strawberry-chocolate",
+    name: "Strawberry Chocolate",
     price: 40,
-    imageUrl: "/images/cake-2.jpg",
-    subtitle: "Classic, light, and elegant.",
+    imageUrl: toDisplayUrl("https://res.cloudinary.com/deuxtg2g2/image/upload/v1767471667/IMG_3012_n4kilb.heic"),
+    subtitle: "Fresh strawberry layers with rich chocolate ganache.",
   },
   {
-    id: "red-velvet",
-    name: "Red Velvet",
-    price: 48,
-    imageUrl: "/images/cake-3.jpg",
-    subtitle: "Velvety crumb, cream cheese.",
+    id: "vanilla-cupcakes",
+    name: "Vanilla Cupcakes (6-pack)",
+    price: 18,
+    imageUrl: "https://res.cloudinary.com/deuxtg2g2/image/upload/v1767394428/cdcffbef-1b94-4205-b2f1-406b2ba05691_lgzvfl.jpg",
+    subtitle: "Fluffy vanilla cupcakes topped with silky vanilla buttercream.",
   },
 ];
 
@@ -42,7 +48,7 @@ export default function BestSellers() {
         </a>
       </div>
 
-      <div className="mt-8 grid gap-5 md:grid-cols-3">
+      <div className="mt-8 grid items-start gap-5 md:grid-cols-3">
         {bestSellers.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
