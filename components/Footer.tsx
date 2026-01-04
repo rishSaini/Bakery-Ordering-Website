@@ -1,21 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    // v1: no backend hookup yet
-    alert("Thanks! Newsletter signup is coming soon.");
-    setEmail("");
-  }
-
   return (
     <footer className="border-t border-rose-100 bg-white/70">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-3">
+        {/* Brand */}
         <div>
           <div className="text-lg font-semibold">Maya&apos;s Cake Cafe</div>
           <p className="mt-2 text-sm text-zinc-600">
@@ -23,57 +14,30 @@ export default function Footer() {
           </p>
         </div>
 
+        {/* Location */}
         <div>
           <div className="text-sm font-semibold">Location</div>
           <p className="mt-2 text-sm text-zinc-600">
-            {/* Replace with real info */}
-            Your City, State
+            1344 E 4065 S
             <br />
-            Pickup & Delivery
+            Millcreek UT, 84124
           </p>
         </div>
 
+        {/* Links */}
         <div>
-          <div className="text-sm font-semibold">Hours</div>
-          <p className="mt-2 text-sm text-zinc-600">
-            Mon–Fri: 9am–6pm
-            <br />
-            Sat: 10am–4pm
-            <br />
-            Sun: Closed
-          </p>
-        </div>
-
-        <div>
-          <div className="text-sm font-semibold">Newsletter</div>
-          <p className="mt-2 text-sm text-zinc-600">Get seasonal specials and new drops.</p>
-
-          <form onSubmit={onSubmit} className="mt-4 flex gap-2">
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              required
-              placeholder="you@email.com"
-              className="w-full rounded-xl border border-rose-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-200"
-            />
-            <button
-              type="submit"
-              className="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-600"
-            >
-              Join
-            </button>
-          </form>
-
-          <div className="mt-4 flex gap-4 text-sm">
+          <div className="text-sm font-semibold">Links</div>
+          <div className="mt-2 flex flex-col gap-2 text-sm">
             <Link href="/contact" className="text-zinc-700 hover:text-zinc-950">
               Contact
             </Link>
-            <a href="#" className="text-zinc-700 hover:text-zinc-950">
+            <a
+              href="https://www.instagram.com/mayas_cake_cafe/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-700 hover:text-zinc-950"
+            >
               Instagram
-            </a>
-            <a href="#" className="text-zinc-700 hover:text-zinc-950">
-              TikTok
             </a>
           </div>
         </div>
