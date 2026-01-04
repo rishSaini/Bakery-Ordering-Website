@@ -97,7 +97,7 @@ export default function CustomOrderForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const occasionSuggestions = useMemo(
-    () => ["Birthday", "Wedding", "Anniversary", "Baby Shower", "Graduation", "Holiday", "Other"],
+    () => ["Birthday", "Anniversary", "Baby Shower", "Graduation", "Holiday", "Other"],
     []
   );
 

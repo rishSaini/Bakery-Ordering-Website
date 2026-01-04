@@ -20,12 +20,12 @@ export default function Hero() {
                     </p>
 
                     <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                        Handcrafted Sweetness for Every Celebration
+                        Handcrafted Sweetness in Salt Lake City
                     </h1>
 
                     <p className="mt-4 max-w-xl text-base text-white/85 md:text-lg">
                         Signature cakes, cupcakes, and custom orders made with love—perfect for birthdays,
-                        weddings, and everything in between.
+                        special occasions, and everything in between.
                     </p>
 
                     <div className="mt-8 flex flex-wrap gap-3">
