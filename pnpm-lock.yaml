@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      .next:
+        specifier: link:.next
+        version: link:.next
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.69.0(react@19.2.3))

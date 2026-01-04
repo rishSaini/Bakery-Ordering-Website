@@ -61,10 +61,12 @@ async function reopenAction(formData: FormData) {
 export default async function AdminInquiriesPage({
   searchParams,
 }: {
-  searchParams: { status?: string; q?: string };
+  searchParams: Promise<{ status?: string; q?: string }>;
 }) {
-  const statusParam = (searchParams.status ?? "open").toLowerCase();
-  const q = (searchParams.q ?? "").trim();
+  const sp = await searchParams;
+
+  const statusParam = (sp.status ?? "open").toLowerCase();
+  const q = (sp.q ?? "").trim();
 
   const statusFilter =
     statusParam === "resolved" ? "RESOLVED" : statusParam === "all" ? null : "OPEN";

@@ -58,6 +58,7 @@ export async function POST(req: Request) {
           budgetDollars: Number.isFinite(budgetDollarsNum) ? budgetDollarsNum : null,
           allergies: body.allergies,
         },
+        message: String(body.cakeMessage ?? "").trim() || "Custom order request",
       } as any, // remove `as any` once your Prisma schema matches these fields
     });
 
