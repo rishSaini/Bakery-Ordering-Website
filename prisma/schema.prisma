@@ -8,25 +8,40 @@ generator client {
   engineType      = "client"
 }
 
+enum InquiryType {
+  CONTACT
+  CUSTOM_ORDER
+}
+
 enum InquiryStatus {
   OPEN
   RESOLVED
 }
 
 model Inquiry {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
 
-  status         InquiryStatus @default(OPEN)
+  type      InquiryType   @default(CONTACT)
+  status    InquiryStatus @default(OPEN)
 
-  name           String
-  email          String
-  phone          String?
-  message        String?
-
-  resolvedAt     DateTime?
+  // resolution fields (for your admin resolve flow)
   resolutionNote String?
+  resolvedAt      DateTime?
+
+  // contact details
+  name      String
+  email     String
+  phone     String?
+  preferredContactMethod String @default("EMAIL")
+
+  // helpful column for sorting/filters
+  requestedFor DateTime?
+
+  // flexible payload for custom-order specifics
+  payload   Json?
+
+  message String?
 }
 
 model GalleryImage {
