@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type PreferredContact = "text" | "call" | "email";
-type Fulfillment = "pickup" | "delivery";
+type Fulfillment = "pickup";
 
 type FormState = {
   occasion: string;
@@ -109,7 +109,7 @@ export default function CustomOrderForm() {
     const e: Record<string, string> = {};
 
     if (!next.occasion.trim()) e.occasion = "Please enter an occasion.";
-    if (!next.dateTimeLocal) e.dateTimeLocal = "Please choose a pickup/delivery date & time.";
+    if (!next.dateTimeLocal) e.dateTimeLocal = "Please choose a pickup date & time.";
     if (!next.sizeServings.trim()) e.sizeServings = "Please enter servings/size.";
     if (!next.flavor.trim()) e.flavor = "Please enter a flavor.";
 
@@ -179,6 +179,7 @@ export default function CustomOrderForm() {
       <div className="rounded-2xl bg-gradient-to-r from-rose-100 via-white to-amber-100 p-4 ring-1 ring-rose-100">
         <div className="text-sm font-semibold text-rose-950">Heads up</div>
         <p className="mt-1 text-sm text-rose-800/90">
+          <span className="font-semibold">Pickup only:</span> We’re currently not offering delivery.
           Custom orders are confirmed after we review details and send you a final quote.
         </p>
       </div>
@@ -204,7 +205,9 @@ export default function CustomOrderForm() {
               placeholder="e.g., Birthday"
               className={cx(
                 "mt-2 w-full rounded-2xl border bg-white px-4 py-2.5 text-sm outline-none focus:ring-2",
-                fieldErrors.occasion ? "border-rose-400 focus:ring-rose-200" : "border-rose-200 focus:ring-rose-200"
+                fieldErrors.occasion
+                  ? "border-rose-400 focus:ring-rose-200"
+                  : "border-rose-200 focus:ring-rose-200"
               )}
             />
             <datalist id="occasion-list">
@@ -218,30 +221,7 @@ export default function CustomOrderForm() {
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-rose-900">Pickup or delivery</label>
-            <div className="mt-2 flex gap-2">
-              {(["pickup", "delivery"] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => set("fulfillment", v)}
-                  className={cx(
-                    "rounded-2xl px-4 py-2 text-sm font-semibold ring-1",
-                    form.fulfillment === v
-                      ? "bg-rose-500 text-white ring-rose-500"
-                      : "bg-white text-rose-900 ring-rose-200 hover:bg-rose-50"
-                  )}
-                >
-                  {v === "pickup" ? "Pickup" : "Delivery"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-rose-900">
-              {form.fulfillment === "pickup" ? "Pickup time" : "Delivery time"}
-            </label>
+            <label className="text-sm font-semibold text-rose-900">Pickup time</label>
             <input
               type="datetime-local"
               value={form.dateTimeLocal}
@@ -304,7 +284,9 @@ export default function CustomOrderForm() {
               placeholder="e.g., Vanilla bean + strawberry"
               className={cx(
                 "mt-2 w-full rounded-2xl border bg-white px-4 py-2.5 text-sm outline-none focus:ring-2",
-                fieldErrors.flavor ? "border-rose-400 focus:ring-rose-200" : "border-rose-200 focus:ring-rose-200"
+                fieldErrors.flavor
+                  ? "border-rose-400 focus:ring-rose-200"
+                  : "border-rose-200 focus:ring-rose-200"
               )}
             />
             {fieldErrors.flavor ? (

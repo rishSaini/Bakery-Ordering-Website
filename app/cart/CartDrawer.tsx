@@ -11,6 +11,12 @@ function formatUSD(amount: number) {
   }).format(amount);
 }
 
+function toDisplayUrl(url: string) {
+  if (!url.includes("/image/upload/")) return url;
+  if (url.includes("/image/upload/f_auto")) return url;
+  return url.replace("/image/upload/", "/image/upload/f_auto,q_auto/");
+}
+
 export default function CartDrawer() {
   const router = useRouter();
 
@@ -53,9 +59,8 @@ export default function CartDrawer() {
         type="button"
         aria-label="Close cart"
         onClick={closeCart}
-        className={`fixed inset-0 z-[60] transition ${
-          isOpen ? "bg-black/30 opacity-100" : "pointer-events-none bg-black/0 opacity-0"
-        }`}
+        className={`fixed inset-0 z-[60] transition ${isOpen ? "bg-black/30 opacity-100" : "pointer-events-none bg-black/0 opacity-0"
+          }`}
       />
 
       {/* Panel */}
@@ -63,9 +68,8 @@ export default function CartDrawer() {
         role="dialog"
         aria-label="Shopping cart"
         aria-modal="true"
-        className={`fixed right-0 top-0 z-[61] flex h-full w-[380px] max-w-[92vw] flex-col bg-white shadow-2xl ring-1 ring-black/5 transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed right-0 top-0 z-[61] flex h-full w-[380px] max-w-[92vw] flex-col bg-white shadow-2xl ring-1 ring-black/5 transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between border-b border-rose-100 px-5 py-4">
           <div>
@@ -81,6 +85,15 @@ export default function CartDrawer() {
           >
             Close
           </button>
+        </div>
+
+        {/* Top note */}
+        <div className="rounded-2xl bg-gradient-to-r from-rose-100 via-white to-amber-100 p-4 ring-1 ring-rose-100">
+          <div className="text-sm font-semibold text-rose-950">Heads up</div>
+          <p className="mt-1 text-sm text-rose-800/90">
+            <span className="font-semibold">Pickup only:</span> We’re currently not offering delivery.
+            Custom orders are confirmed after we review details and send you a final quote.
+          </p>
         </div>
 
         <div className="flex-1 overflow-auto px-5 py-4">
@@ -99,7 +112,7 @@ export default function CartDrawer() {
                   className="flex gap-4 rounded-2xl border border-rose-100 bg-white p-3"
                 >
                   <div className="h-16 w-20 overflow-hidden rounded-xl bg-rose-50 ring-1 ring-rose-100">
-                    <img src={x.imageUrl} alt={x.name} className="h-full w-full object-cover" />
+                    <img src={toDisplayUrl(x.imageUrl)} alt={x.name} className="h-full w-full object-cover" />
                   </div>
 
                   <div className="min-w-0 flex-1">

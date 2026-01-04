@@ -20,13 +20,14 @@ function IconCustom() {
     </svg>
   );
 }
-function IconDelivery() {
+
+function IconEggless() {
   return (
     <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 7h11v10H3z" />
-      <path d="M14 10h4l3 3v4h-7z" />
-      <path d="M7 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
-      <path d="M18 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+      {/* egg outline */}
+      <path d="M12 3c3 0 6 4.1 6 9a6 6 0 0 1-12 0c0-4.9 3-9 6-9Z" />
+      {/* no-egg slash */}
+      <path d="M4 20L20 4" />
     </svg>
   );
 }
@@ -34,8 +35,13 @@ function IconDelivery() {
 const features: Feature[] = [
   { title: "Baked Daily", subtitle: "Fresh ingredients, every morning.", icon: <IconFresh /> },
   { title: "Design Your Own", subtitle: "Custom cakes for any theme.", icon: <IconCustom /> },
-  { title: "To Your Door", subtitle: "Delivery & pickup options.", icon: <IconDelivery /> },
+  {
+    title: "100% Eggless",
+    subtitle: "All cakes are eggless by default—perfect for vegetarians and egg-free preferences.",
+    icon: <IconEggless />,
+  },
 ];
+
 
 export default function FeatureRow() {
   return (

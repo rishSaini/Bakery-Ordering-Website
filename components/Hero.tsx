@@ -16,7 +16,7 @@ export default function Hero() {
 
                 <div className="relative mx-auto flex max-w-6xl flex-col items-start justify-center px-4 py-16">
                     <p className="mb-3 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-medium tracking-wide text-white ring-1 ring-white/25">
-                        Handcrafted cakes • Custom designs • Local delivery
+                        Handcrafted cakes • Custom designs • Eggless
                     </p>
 
                     <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
