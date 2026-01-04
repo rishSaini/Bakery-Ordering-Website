@@ -10,12 +10,22 @@ generator client {
 
 enum InquiryType {
   CONTACT
+  ORDER
   CUSTOM_ORDER
 }
 
 enum InquiryStatus {
   OPEN
   RESOLVED
+}
+
+enum PaymentStatus {
+  NOT_APPLICABLE
+  PENDING
+  PAID
+  FAILED
+  CANCELED
+  REFUNDED
 }
 
 model Inquiry {
@@ -42,6 +52,14 @@ model Inquiry {
   payload   Json?
 
   message String?
+
+  paymentStatus           PaymentStatus @default(NOT_APPLICABLE)
+  amountCents             Int?
+  currency                String        @default("usd")
+  itemsJson               Json?
+  stripeCheckoutSessionId String?       @unique
+  stripePaymentIntentId   String?       @unique
+  paidAt                  DateTime?
 }
 
 model GalleryImage {
