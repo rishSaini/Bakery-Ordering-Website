@@ -88,13 +88,16 @@ export default function CartDrawer() {
         </div>
 
         {/* Top note */}
-        <div className="rounded-2xl bg-gradient-to-r from-rose-100 via-white to-amber-100 p-4 ring-1 ring-rose-100">
-          <div className="text-sm font-semibold text-rose-950">Heads up</div>
-          <p className="mt-1 text-sm text-rose-800/90">
-            <span className="font-semibold">Pickup only:</span> We’re currently not offering delivery.
-            Custom orders are confirmed after we review details and send you a final quote.
-          </p>
+        <div className="px-5 pt-4">
+          <div className="rounded-2xl bg-gradient-to-r from-rose-100 via-white to-amber-100 p-4 ring-1 ring-rose-100">
+            <div className="text-sm font-semibold text-rose-950">Heads up</div>
+            <p className="mt-1 text-sm text-rose-800/90">
+              <span className="font-semibold">Pickup only:</span> We’re currently not offering delivery.
+              Custom orders are confirmed after we review details and send you a final quote.
+            </p>
+          </div>
         </div>
+
 
         <div className="flex-1 overflow-auto px-5 py-4">
           {items.length === 0 ? (
