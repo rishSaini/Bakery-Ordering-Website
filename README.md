@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Maya’s Cake Cafe — Bakery Ordering Website
 
-## Getting Started
+A modern, mobile-first bakery website for **Maya’s Cake Cafe** that combines a clean marketing homepage with a real, database-backed **menu** and **cake portfolio gallery**. It’s designed to feel like a small business site customers can actually use: browse products quickly, filter/search, and view a curated gallery of past work.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What this project includes
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Customer-facing pages
+- **Homepage** with a hero section, feature highlights, best sellers, an “about” preview, and an Instagram-style grid.
+- **Menu / Shop page** powered by the database (Prisma + Postgres) and rendered via Next.js App Router.
+- **Gallery page** (portfolio) powered by the database, with category filtering and a masonry-style layout for images.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Menu browsing experience (fast + “shop-like”)
+The menu UI is built as a client component so it feels responsive and app-like:
+- Search by name/category
+- Category filter (Cakes / Cupcakes / Custom Made)
+- Price range filter
+- Sorting (popularity, price, name)
+- Pagination (12 per page)
+- “Showing X–Y of Z” toolbar
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+All of that is handled in `MenuClient` + supporting components.
 
-## Learn More
+### Gallery / portfolio experience
+- Pulls images from the DB and renders them in a column-based masonry layout
+- Category “pills” are generated dynamically from the DB categories
+- Includes a small Cloudinary-friendly helper (`f_auto,q_auto`) to serve optimized formats when possible
 
-To learn more about Next.js, take a look at the following resources:
+### UI components included
+- Sticky `Navbar` with nav links + cart badge placeholder
+- Hero section
+- Feature row and home sections (best sellers, about preview, Instagram grid, footer)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> Note: The current business flow is **pickup-only**. If any UI copy still mentions delivery, treat that as copy to update—not a core assumption of the system.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Tech stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Next.js (App Router)** + **React** + **TypeScript**
+- **Tailwind CSS** for styling
+- **PostgreSQL** for data
+- **Prisma ORM** for queries/migrations
+- **Cloudinary** for hosted images + optimization (used heavily in the gallery/logo)
+- **Stripe Checkout** (if enabled) for online payments
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+
+Architecture pattern:
+- **Server components/pages** fetch data from Prisma (`MenuPage`, `GalleryPage`)
+- **Client components** handle interactive browsing UX (`MenuClient`, `GalleryClient`)
+
+---
+
+## Data model (conceptual)
+
+Your Prisma schema is the source of truth, but conceptually the app expects:
+
+### `Product`
+- `id`
+- `name`
+- `priceCents`
+- `category` (e.g., Cakes / Cupcakes / Custom Made)
+- `imageUrl`
+- `isActive`
+- `popularity`
+- `badge`
+- timestamps
+
+These are queried and mapped into UI-ready values in the menu page.
+
+### `GalleryImage`
+- `id`
+- `title`
+- `imageUrl` (Cloudinary URL)
+- `category`
+- `createdAt`
+
+These are queried server-side and rendered client-side with category filtering.
+
+### `Inquiry` / `Order` (if present)
+If your repo includes these flows:
+- **Custom order / contact inquiries** stored in the DB and viewable in an admin/inbox-style UI
+- **Online checkout orders** (Stripe) that you’ve been wiring into the admin side
+
+---
+
